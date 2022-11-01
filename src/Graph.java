@@ -31,26 +31,25 @@ public class Graph {
         }
     }
 
-    private boolean isReachable(String a, String b){
+    private boolean _isReachable(String origin, String target){
         ArrayList<String> visited = new ArrayList<>();
         ArrayList<String> queue = new ArrayList<>();
 
-        // adds the source in visited in queue list
-        visited.add(a);
-        queue.add(a);
+        // adds source node to visited and queue
+        visited.add(origin); queue.add(target);
 
-        while(!queue.isEmpty()){
-            // removes the first element from queue
-            String n = queue.remove(0);
+        while(!queue.isEmpty()) {
+            String border = queue.remove(0);
+            // border is equal to the target node - happy case :)
+            if (border.equals(target)) return true;
 
-            if(n.equals(b)) return true;
-
-            // check if its not null before
-            if(this.adjacencyHash.get(n) != null){
-                for(String adjNode : this.adjacencyHash.get(n)){
-                    if(!visited.contains(adjNode)){
-                        queue.add(adjNode);
-                        visited.add(adjNode);
+            // adds the adjacent of border to the frontier
+            if (this.adjacencyHash.get(border) != null) {
+                for (String newBorder : this.adjacencyHash.get(border)) {
+                    // explores only nodes not visited
+                    if (!visited.contains(newBorder)) {
+                        queue.add(newBorder);
+                        visited.add(newBorder);
                     }
                 }
             }
@@ -65,8 +64,9 @@ public class Graph {
         for(var source: this.adjacencyHash.entrySet()){
             for(var sink: this.adjacencyHash.entrySet()){
                 if(!source.getKey().equals(sink.getKey())){
-                    if(isReachable(source.getKey(), sink.getKey())){
+                    if(_isReachable(source.getKey(), sink.getKey())){
                         numberCombinations+=1;
+                        System.out.println("Nova combinação: "+ source.getKey() + " -> " + sink.getKey());
                     }
                 }
             }
@@ -81,10 +81,14 @@ public class Graph {
         for(var source: this.adjacencyHash.entrySet()){
             for(var sink: this.adjacencyHash.entrySet()){
                 if(!source.getKey().equals(sink.getKey())){
-                    if(isReachable(source.getKey(), sink.getKey())){
-                        for(var nextFlavor: this.adjacencyHash.entrySet()){
-                            if(isReachable(sink.getKey(), nextFlavor.getKey())){
-                                numberCombinations+=1;
+                    if(_isReachable(source.getKey(), sink.getKey())){
+                        for(var nextFlavor: this.adjacencyHash.entrySet()) {
+                            if(!source.getKey().equals(nextFlavor.getKey()) &&
+                                    !sink.getKey().equals(nextFlavor.getKey())){
+                                if(_isReachable(sink.getKey(), nextFlavor.getKey())){
+                                    numberCombinations+=1;
+                                    System.out.println("Nova combinação: "+ source.getKey() + " -> " + sink.getKey() + " -> " + nextFlavor.getKey());
+                                }
                             }
                         }
                     }
