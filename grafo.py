@@ -17,7 +17,7 @@ def caminho_para(source: V, target: V) -> bool:
             return True
 
         # nova fronteira de busca
-        for i in graph.neighbors_for_vertex(n):
+        for i in g.neighbors_for_vertex(n):
             if i not in visited:
                 queue.append(i)
                 visited.append(i)
@@ -108,40 +108,40 @@ if __name__ == "__main__":
                 distinct_vertices.append(content[2].strip())
 
         # creates the graph
-        graph: Grafo[str] = Grafo(distinct_vertices)
+        g: Grafo[str] = Grafo(distinct_vertices)
 
         for line in lines:
             content = line.split(' ')
-            graph.add_edge_by_vertices(content[0], content[2].strip())
+            g.add_edge_by_vertices(content[0], content[2].strip())
     f.close()
 
     print("-" * 20)
-    print(graph)
+    print(g)
     print("-" * 20)
 
     n_connections = 0
 
     # para cada nodo no grafo
-    new_combination: set = set()
-    for primeiro_sabor in graph.get_vertices():
-        for segundo_sabor in graph.get_vertices():
+    possibilidade_sorvetes: set = set()
+    for primeiro_sabor in g.get_vertices():
+        for segundo_sabor in g.get_vertices():
             if primeiro_sabor != segundo_sabor:
                 if caminho_para(primeiro_sabor, segundo_sabor):
-                    new_combination.add(f"{primeiro_sabor} -> {segundo_sabor}")
+                    possibilidade_sorvetes.add(f"{primeiro_sabor} -> {segundo_sabor}")
 
-    print("Combinações para 2 sabores: ", len(new_combination))
-    print(new_combination)
+    print("Combinações para 2 sabores: ", len(possibilidade_sorvetes))
+    print(possibilidade_sorvetes)
 
     # para cada nodo no grafo
-    new_combination: set = set()
-    for primeiro_sabor in graph.get_vertices():
-        for segundo_sabor in graph.get_vertices():
+    possibilidade_sorvetes: set = set()
+    for primeiro_sabor in g.get_vertices():
+        for segundo_sabor in g.get_vertices():
             if primeiro_sabor != segundo_sabor:
                 if caminho_para(primeiro_sabor, segundo_sabor):
-                    for terceiro_sabor in graph.get_vertices():
+                    for terceiro_sabor in g.get_vertices():
                         if terceiro_sabor not in [primeiro_sabor, segundo_sabor]:
                             if caminho_para(segundo_sabor, terceiro_sabor):
-                                new_combination.add(f"{primeiro_sabor} -> {segundo_sabor} -> {terceiro_sabor}")
+                                possibilidade_sorvetes.add(f"{primeiro_sabor} -> {segundo_sabor} -> {terceiro_sabor}")
 
-    print("Combinações para 3 sabores: ", len(new_combination))
-    print(new_combination)
+    print("Combinações para 3 sabores: ", len(possibilidade_sorvetes))
+    print(possibilidade_sorvetes)
