@@ -25,6 +25,14 @@ def path_to(source: V, target: V) -> bool:
     return False
 
 
+def write_set_to_txt(file_name: str, combinations: set):
+    with open(file_name, mode="w", encoding="UTF8") as file:
+        for elem in combinations:
+            file.write(elem)
+            file.write("\n")
+    file.close()
+
+
 class Graph(Generic[V]):
     def __init__(self, vertices=None) -> None:
         if vertices is None:
@@ -130,6 +138,7 @@ if __name__ == "__main__":
                 all_combinations.add(f"{first_flavor} -> {second_flavor}")
     print("All combinations for two flavors: ", len(all_combinations))
     print("Result in: ", time.time() - start)
+    write_set_to_txt("all_combinations_2.txt", all_combinations)
 
     start = time.time()
     # generates combinations of vertices
@@ -143,3 +152,4 @@ if __name__ == "__main__":
 
     print("All combinations for three flavors: ", len(all_combinations))
     print("Result in: ", time.time() - start)
+    write_set_to_txt("all_combinations_3.txt", all_combinations)
