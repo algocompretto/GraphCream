@@ -19,3 +19,7 @@ papaya_com_cassis -> kiwi
 soursop -> green_apple
 soursop -> kiwi
 ```
+
+<p align="center">
+  <img src="graphviz.svg" />
+</p>
