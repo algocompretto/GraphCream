@@ -1,11 +1,12 @@
 from typing import TypeVar, Generic, List
-from aresta import Aresta
+from edge import Edge
+from itertools import combinations_with_replacement
 import sys
 
 V = TypeVar('V')
 
 
-def caminho_para(source: V, target: V) -> bool:
+def path_to(source: V, target: V) -> bool:
     visited = list()
     visited.append(source)
 
@@ -16,7 +17,7 @@ def caminho_para(source: V, target: V) -> bool:
         if n == target:
             return True
 
-        # nova fronteira de busca
+        # new frontier search
         for i in g.neighbors_for_vertex(n):
             if i not in visited:
                 queue.append(i)
@@ -24,12 +25,20 @@ def caminho_para(source: V, target: V) -> bool:
     return False
 
 
-class Grafo(Generic[V]):
+def write_set_to_txt(file_name: str, combinations: set):
+    with open(file_name, mode="w", encoding="UTF8") as file:
+        for elem in combinations:
+            file.write(elem)
+            file.write("\n")
+    file.close()
+
+
+class Graph(Generic[V]):
     def __init__(self, vertices=None) -> None:
         if vertices is None:
             vertices = []
         self._vertices: List[V] = vertices
-        self._arestas: List[List[Aresta]] = [[] for _ in vertices]
+        self._edges: List[List[Edge]] = [[] for _ in vertices]
 
     def get_vertices(self):
         return self._vertices
@@ -40,22 +49,22 @@ class Grafo(Generic[V]):
 
     @property
     def edge_count(self) -> int:
-        return sum(map(len, self._arestas))  # Number of edges
+        return sum(map(len, self._edges))  # Number of edges
 
     # Add a vertex to the graph and return its index
     def add_vertex(self, vertex: V) -> int:
         self._vertices.append(vertex)
-        self._arestas.append([])  # add empty list for containing edges
+        self._edges.append([])  # add empty list for containing edges
         return self.vertex_count - 1  # return index of added vertex
 
     # This is an undirected graph,
     # so we always add edges in both directions
-    def add_edge(self, edge: Aresta) -> None:
-        self._arestas[edge.u].append(edge)
+    def add_edge(self, edge: Edge) -> None:
+        self._edges[edge.u].append(edge)
 
     # Add an edge using vertex indices (convenience method)
     def add_edge_by_indices(self, u: int, v: int) -> None:
-        edge: Aresta = Aresta(u, v)
+        edge: Edge = Edge(u, v)
         self.add_edge(edge)
 
     # Add an edge by looking up vertex indices (convenience method)
@@ -74,18 +83,18 @@ class Grafo(Generic[V]):
 
     # Find the vertices that a vertex at some index is connected to
     def neighbors_for_index(self, index: int) -> List[V]:
-        return list(map(self.vertex_at, [e.v for e in self._arestas[index]]))
+        return list(map(self.vertex_at, [e.v for e in self._edges[index]]))
 
     # Lookup a vertices index and find its neighbors (convenience method)
     def neighbors_for_vertex(self, vertex: V) -> List[V]:
         return self.neighbors_for_index(self.index_of(vertex))
 
     # Return all the edges associated with a vertex at some index
-    def edges_for_index(self, index: int) -> List[Aresta]:
-        return self._arestas[index]
+    def edges_for_index(self, index: int) -> List[Edge]:
+        return self._edges[index]
 
     # Lookup the index of a vertex and return its edges (convenience method)
-    def edges_for_vertex(self, vertex: V) -> List[Aresta]:
+    def edges_for_vertex(self, vertex: V) -> List[Edge]:
         return self.edges_for_index(self.index_of(vertex))
 
     def __str__(self) -> str:
@@ -98,6 +107,7 @@ class Grafo(Generic[V]):
 if __name__ == "__main__":
     distinct_vertices: List[str] = list()
 
+    # opening file read
     with open(sys.argv[1], encoding="UTF8") as f:
         lines = f.readlines()
         for line in lines:
@@ -108,40 +118,38 @@ if __name__ == "__main__":
                 distinct_vertices.append(content[2].strip())
 
         # creates the graph
-        g: Grafo[str] = Grafo(distinct_vertices)
+        g: Graph[str] = Graph(distinct_vertices)
 
+        # creating the edges
         for line in lines:
             content = line.split(' ')
             g.add_edge_by_vertices(content[0], content[2].strip())
     f.close()
 
-    print("-" * 20)
-    print(g)
-    print("-" * 20)
+    import time
 
-    n_connections = 0
+    start = time.time()
 
-    # para cada nodo no grafo
-    possibilidade_sorvetes: set = set()
-    for primeiro_sabor in g.get_vertices():
-        for segundo_sabor in g.get_vertices():
-            if primeiro_sabor != segundo_sabor:
-                if caminho_para(primeiro_sabor, segundo_sabor):
-                    possibilidade_sorvetes.add(f"{primeiro_sabor} -> {segundo_sabor}")
+    # generates combinations of vertices
+    all_combinations: set = set()
+    for first_flavor, second_flavor in combinations_with_replacement(g.get_vertices(), 2):
+        if first_flavor != second_flavor:
+            if path_to(first_flavor, second_flavor):
+                all_combinations.add(f"{first_flavor} -> {second_flavor}")
+    print("All combinations for two flavors: ", len(all_combinations))
+    print("Result in: ", time.time() - start)
+    write_set_to_txt("all_combinations_2.txt", all_combinations)
 
-    print("Combinações para 2 sabores: ", len(possibilidade_sorvetes))
-    print(possibilidade_sorvetes)
+    start = time.time()
+    # generates combinations of vertices
+    all_combinations: set = set()
+    for first_flavor, second_flavor, third_flavor in combinations_with_replacement(g.get_vertices(), 3):
+        if first_flavor != second_flavor:
+            if path_to(first_flavor, second_flavor):
+                if third_flavor not in [first_flavor, second_flavor]:
+                    if path_to(second_flavor, third_flavor):
+                        all_combinations.add(f"{first_flavor} -> {second_flavor} -> {third_flavor}")
 
-    # para cada nodo no grafo
-    possibilidade_sorvetes: set = set()
-    for primeiro_sabor in g.get_vertices():
-        for segundo_sabor in g.get_vertices():
-            if primeiro_sabor != segundo_sabor:
-                if caminho_para(primeiro_sabor, segundo_sabor):
-                    for terceiro_sabor in g.get_vertices():
-                        if terceiro_sabor not in [primeiro_sabor, segundo_sabor]:
-                            if caminho_para(segundo_sabor, terceiro_sabor):
-                                possibilidade_sorvetes.add(f"{primeiro_sabor} -> {segundo_sabor} -> {terceiro_sabor}")
-
-    print("Combinações para 3 sabores: ", len(possibilidade_sorvetes))
-    print(possibilidade_sorvetes)
+    print("All combinations for three flavors: ", len(all_combinations))
+    print("Result in: ", time.time() - start)
+    write_set_to_txt("all_combinations_3.txt", all_combinations)
