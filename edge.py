@@ -3,12 +3,12 @@ from dataclasses import dataclass
 
 
 @dataclass
-class Aresta:
+class Edge:
     u: int  # vertice "de"
     v: int  # vertice "para"
 
-    def reverso(self) -> Aresta:
-        return Aresta(self.v, self.u)
+    def reverso(self) -> Edge:
+        return Edge(self.v, self.u)
 
     def __str__(self) -> str:
         return f"{self.u} -> {self.v}"
