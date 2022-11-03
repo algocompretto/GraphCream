@@ -1,11 +1,11 @@
-from typing import TypeVar, Generic, List, Optional
+from typing import TypeVar, Generic, List
 from aresta import Aresta
 import sys
 
 V = TypeVar('V')
 
 
-def path_to(source: V, target: V) -> bool:
+def caminho_para(source: V, target: V) -> bool:
     visited = list()
     visited.append(source)
 
@@ -24,7 +24,7 @@ def path_to(source: V, target: V) -> bool:
     return False
 
 
-class Graph(Generic[V]):
+class Grafo(Generic[V]):
     def __init__(self, vertices=None) -> None:
         if vertices is None:
             vertices = []
@@ -108,7 +108,7 @@ if __name__ == "__main__":
                 distinct_vertices.append(content[2].strip())
 
         # creates the graph
-        graph: Graph[str] = Graph(distinct_vertices)
+        graph: Grafo[str] = Grafo(distinct_vertices)
 
         for line in lines:
             content = line.split(' ')
@@ -126,7 +126,7 @@ if __name__ == "__main__":
     for primeiro_sabor in graph.get_vertices():
         for segundo_sabor in graph.get_vertices():
             if primeiro_sabor != segundo_sabor:
-                if path_to(primeiro_sabor, segundo_sabor):
+                if caminho_para(primeiro_sabor, segundo_sabor):
                     new_combination.add(f"{primeiro_sabor} -> {segundo_sabor}")
 
     print("Combinações para 2 sabores: ", len(new_combination))
@@ -137,10 +137,10 @@ if __name__ == "__main__":
     for primeiro_sabor in graph.get_vertices():
         for segundo_sabor in graph.get_vertices():
             if primeiro_sabor != segundo_sabor:
-                if path_to(primeiro_sabor, segundo_sabor):
+                if caminho_para(primeiro_sabor, segundo_sabor):
                     for terceiro_sabor in graph.get_vertices():
                         if terceiro_sabor not in [primeiro_sabor, segundo_sabor]:
-                            if path_to(segundo_sabor, terceiro_sabor):
+                            if caminho_para(segundo_sabor, terceiro_sabor):
                                 new_combination.add(f"{primeiro_sabor} -> {segundo_sabor} -> {terceiro_sabor}")
 
     print("Combinações para 3 sabores: ", len(new_combination))
