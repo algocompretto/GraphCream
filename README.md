@@ -23,3 +23,10 @@ soursop -> kiwi
 <p align="center">
   <img src="graphviz.svg" />
 </p>
+
+## Usage
+```bash
+python3 graph.py <path_to_test_file>
+# Example
+python3 graph.py test_cases/casocohen10.txt
+```
