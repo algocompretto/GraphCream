@@ -1,5 +1,3 @@
-# from busca_generica import node_to_path, bfs, Node
-
 from typing import TypeVar, Generic, List, Optional
 from aresta import Aresta
 import sys
