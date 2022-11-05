@@ -1,23 +1,38 @@
-from typing import TypeVar, Generic, List
-from edge import Edge
-from itertools import combinations_with_replacement
 import sys
+from dataclasses import dataclass
+from itertools import combinations_with_replacement
+from typing import TypeVar, Generic, List, Set
 
+# Generics
 V = TypeVar('V')
 
 
 def path_to(source: V, target: V) -> bool:
-    visited = list()
+    """
+    Using Breadth-First Search, checks if a node target is reachable
+    starting from source node.
+
+    Args:
+        source: node where the path begins
+        target:  node where the algorithm wants to end
+
+    Returns:
+        bool: True if there is a path between source and targe, False otherwise
+    """
+    # Creates the visited and queue lists
+    visited: List[V] = list()
     visited.append(source)
 
-    queue = [source]
+    queue: List[V] = [source]
 
+    # While there is frontier to be explored
     while queue:
-        n = queue.pop(0)
+        # Removes the first element and checks if it is target value
+        n: V = queue.pop(0)
         if n == target:
             return True
 
-        # new frontier search
+        # Explore the adjacent vertices
         for i in g.neighbors_for_vertex(n):
             if i not in visited:
                 queue.append(i)
@@ -25,7 +40,15 @@ def path_to(source: V, target: V) -> bool:
     return False
 
 
-def write_set_to_txt(file_name: str, combinations: set):
+def write_set_to_txt(file_name: str, combinations: Set[str]) -> None:
+    """
+    Given a set of strings with possible flavor combinations, write them to a
+    file.
+
+    Args:
+        file_name: path to write the file
+        combinations: Set of string values to write on file
+    """
     with open(file_name, mode="w", encoding="UTF8") as file:
         for elem in combinations:
             file.write(elem)
@@ -33,7 +56,20 @@ def write_set_to_txt(file_name: str, combinations: set):
     file.close()
 
 
+@dataclass
+class Edge:
+    u: int  # "from" vertex
+    v: int  # "to" vertex
+
+    def __str__(self) -> str:
+        return f"{self.u} -> {self.v}"
+
+
 class Graph(Generic[V]):
+    """
+    A generic Graph class to be used in the current work.
+    """
+
     def __init__(self, vertices=None) -> None:
         if vertices is None:
             vertices = []
@@ -45,36 +81,64 @@ class Graph(Generic[V]):
 
     @property
     def vertex_count(self) -> int:
-        return len(self._vertices)  # Number of vertices
+        # Number of vertices
+        return len(self._vertices)
 
     @property
     def edge_count(self) -> int:
-        return sum(map(len, self._edges))  # Number of edges
+        # Number of edges
+        return sum(map(len, self._edges))
 
-    # Add a vertex to the graph and return its index
     def add_vertex(self, vertex: V) -> int:
-        self._vertices.append(vertex)
-        self._edges.append([])  # add empty list for containing edges
-        return self.vertex_count - 1  # return index of added vertex
+        """
+        Add a vertex to the graph and return its index.
 
-    # This is an undirected graph,
-    # so we always add edges in both directions
+        Args:
+            vertex: The vertex you want to get the index
+
+        Returns:
+            The index integer
+        """
+        self._vertices.append(vertex)
+        self._edges.append([])
+        return self.vertex_count - 1
+
     def add_edge(self, edge: Edge) -> None:
         self._edges[edge.u].append(edge)
 
-    # Add an edge using vertex indices (convenience method)
     def add_edge_by_indices(self, u: int, v: int) -> None:
+        """
+        Add an edge using vertex indices
+
+        Args:
+            u: First node you want to add
+            v: Second node you want to add
+        """
         edge: Edge = Edge(u, v)
         self.add_edge(edge)
 
-    # Add an edge by looking up vertex indices (convenience method)
     def add_edge_by_vertices(self, first: V, second: V) -> None:
+        """
+        Add an edge by looking up the vertex indices.
+
+        Args:
+            first: First node of the edge
+            second: Second node of the edge
+        """
         u: int = self._vertices.index(first)
         v: int = self._vertices.index(second)
         self.add_edge_by_indices(u, v)
 
-    # Find the vertex at a specific index
     def vertex_at(self, index: int) -> V:
+        """
+        Find the vertex at a specific index.
+
+        Args:
+            index: Index of the vertex you want
+
+        Returns:
+            Returns the vertex item of type V
+        """
         return self._vertices[index]
 
     # Find the index of a vertex in the graph
@@ -107,9 +171,9 @@ class Graph(Generic[V]):
 if __name__ == "__main__":
     distinct_vertices: List[str] = list()
 
-    # opening file read
+    # opening file and reading from it
     with open(sys.argv[1], encoding="UTF8") as f:
-        lines = f.readlines()
+        lines: List[str] = f.readlines()
         for line in lines:
             content = line.split(' ')
             if content[0] not in distinct_vertices:
@@ -122,7 +186,7 @@ if __name__ == "__main__":
 
         # creating the edges
         for line in lines:
-            content = line.split(' ')
+            content: List[str] = line.split(' ')
             g.add_edge_by_vertices(content[0], content[2].strip())
     f.close()
 
@@ -144,11 +208,9 @@ if __name__ == "__main__":
     # generates combinations of vertices
     all_combinations: set = set()
     for first_flavor, second_flavor, third_flavor in combinations_with_replacement(g.get_vertices(), 3):
-        if first_flavor != second_flavor:
-            if path_to(first_flavor, second_flavor):
-                if third_flavor not in [first_flavor, second_flavor]:
-                    if path_to(second_flavor, third_flavor):
-                        all_combinations.add(f"{first_flavor} -> {second_flavor} -> {third_flavor}")
+        if first_flavor != second_flavor and path_to(first_flavor, second_flavor):
+            if third_flavor not in [first_flavor, second_flavor] and path_to(second_flavor, third_flavor):
+                all_combinations.add(f"{first_flavor} -> {second_flavor} -> {third_flavor}")
 
     print("All combinations for three flavors: ", len(all_combinations))
     print("Result in: ", time.time() - start)
