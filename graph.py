@@ -1,10 +1,12 @@
+import os
 import sys
 from dataclasses import dataclass
-from itertools import combinations_with_replacement
-from typing import TypeVar, Generic, List, Set
+from itertools import combinations, permutations
+from typing import Generic, List, Set, TypeVar, Union
 
 # Generics
 V = TypeVar('V')
+os.makedirs("results/", exist_ok=True)
 
 
 def path_to(source: V, target: V) -> bool:
@@ -29,8 +31,7 @@ def path_to(source: V, target: V) -> bool:
     while queue:
         # Removes the first element and checks if it is target value
         n: V = queue.pop(0)
-        if n == target:
-            return True
+        if n == target: return True
 
         # Explore the adjacent vertices
         for i in g.neighbors_for_vertex(n):
@@ -40,17 +41,17 @@ def path_to(source: V, target: V) -> bool:
     return False
 
 
-def write_set_to_txt(file_name: str, combinations: Set[str]) -> None:
+def write_to_file(file_name: str, series: Union[Set[str], List[str]]) -> None:
     """
     Given a set of strings with possible flavor combinations, write them to a
     file.
 
     Args:
         file_name: path to write the file
-        combinations: Set of string values to write on file
+        series: Set of string values to write on file
     """
     with open(file_name, mode="w", encoding="UTF8") as file:
-        for elem in combinations:
+        for elem in series:
             file.write(elem)
             file.write("\n")
     file.close()
@@ -149,7 +150,7 @@ class Graph(Generic[V]):
     def neighbors_for_index(self, index: int) -> List[V]:
         return list(map(self.vertex_at, [e.v for e in self._edges[index]]))
 
-    # Lookup a vertices index and find its neighbors (convenience method)
+    # Lookup a vertices index and find its neighbors
     def neighbors_for_vertex(self, vertex: V) -> List[V]:
         return self.neighbors_for_index(self.index_of(vertex))
 
@@ -157,7 +158,7 @@ class Graph(Generic[V]):
     def edges_for_index(self, index: int) -> List[Edge]:
         return self._edges[index]
 
-    # Lookup the index of a vertex and return its edges (convenience method)
+    # Lookup the index of a vertex and return its edges
     def edges_for_vertex(self, vertex: V) -> List[Edge]:
         return self.edges_for_index(self.index_of(vertex))
 
@@ -166,6 +167,27 @@ class Graph(Generic[V]):
         for i in range(self.vertex_count):
             desc += f"{self.vertex_at(i)} -> {self.neighbors_for_index(i)}\n"
         return desc
+
+    def bfs(self, initial, goal, successors):
+        frontier: Queue[Node[V]] = Queue()
+        frontier.push(Node(initial, None))
+
+        explored: Set[V] = {initial}
+
+        while not frontier.empty:
+            current_node: Node[V] = frontier.pop()
+            current_state: V = current_node.state
+            current_vertex = self.vertex_at(self.index_of(current_state))
+
+            if initial == goal: return True
+            
+            for child in self.neighbors_for_vertex(current_vertex):
+                if child in explored:
+                    continue
+                explored.add(child)
+                frontier.push(Node(child, current_node))
+        return False
+
 
 
 if __name__ == "__main__":
@@ -190,28 +212,18 @@ if __name__ == "__main__":
             g.add_edge_by_vertices(content[0], content[2].strip())
     f.close()
 
-    import time
-
-    start = time.time()
 
     # generates combinations of vertices
-    all_combinations: set = set()
-    for first_flavor, second_flavor in combinations_with_replacement(g.get_vertices(), 2):
+    all_combinations: Set[str] = set()
+    for first_flavor, second_flavor in permutations(g.get_vertices(), 2):
         if first_flavor != second_flavor:
             if path_to(first_flavor, second_flavor):
                 all_combinations.add(f"{first_flavor} -> {second_flavor}")
     print("All combinations for two flavors: ", len(all_combinations))
-    print("Result in: ", time.time() - start)
-    write_set_to_txt("all_combinations_2.txt", all_combinations)
 
-    start = time.time()
-    # generates combinations of vertices
-    all_combinations: set = set()
-    for first_flavor, second_flavor, third_flavor in combinations_with_replacement(g.get_vertices(), 3):
-        if first_flavor != second_flavor and path_to(first_flavor, second_flavor):
-            if third_flavor not in [first_flavor, second_flavor] and path_to(second_flavor, third_flavor):
-                all_combinations.add(f"{first_flavor} -> {second_flavor} -> {third_flavor}")
-
+    all_combinations: Set[str] = set()
+    for first_flavor, second_flavor, third_flavor in permutations(g.get_vertices(), 3):
+            if first_flavor != second_flavor and path_to(first_flavor, second_flavor):
+                if third_flavor not in [first_flavor, second_flavor] and path_to(second_flavor, third_flavor):
+                    all_combinations.add(f"{first_flavor} -> {second_flavor} -> {third_flavor}")
     print("All combinations for three flavors: ", len(all_combinations))
-    print("Result in: ", time.time() - start)
-    write_set_to_txt("all_combinations_3.txt", all_combinations)
